@@ -1,0 +1,4 @@
+{
+    "modules": ["drashna/pointing_device_accel"]
+}
+// https://github.com/drashna/qmk_modules/tree/main/pointing_device_accel

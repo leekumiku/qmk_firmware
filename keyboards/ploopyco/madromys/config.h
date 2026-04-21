@@ -29,6 +29,17 @@
 
 // #define ROTATIONAL_TRANSFORM_ANGLE 0
 #define POINTING_DEVICE_INVERT_Y
+// #define PLOOPY_DPI_OPTIONS {1200, 1400, 1600, 1800, 2000, 2200, 2400}
+// #define PLOOPY_DPI_DEFAULT 2
+
+#define COMBO_TERM 100
+#define TAPPING_TERM 175
+
+// drashna/pointing_device_accel
+#define POINTING_DEVICE_ACCEL_TAKEOFF 2.0      // lower/higher value = curve takes off more smoothly/abruptly
+#define POINTING_DEVICE_ACCEL_GROWTH_RATE 0.25 // lower/higher value = curve reaches its upper limit slower/faster
+#define POINTING_DEVICE_ACCEL_OFFSET 2.2       // lower/higher value = acceleration kicks in earlier/later
+#define POINTING_DEVICE_ACCEL_LIMIT 0.2        // lower limit of accel curve (minimum acceleration factor)
 
 /* PMW3360 Settings */
 #define PMW33XX_LIFTOFF_DISTANCE 0x00
