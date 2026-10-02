@@ -17,129 +17,49 @@
  */
 #include QMK_KEYBOARD_H
 
-// https://getreuer.info/posts/keyboards/faqs/index.html#mt-doesnt-work-with-this-keycode-qmk
-#define LT_DRAGSCROLL LT(1, KC_NO)
+#define LOWRES_SCROLL_TICK_SIZE 32
 
-void manageDPI(bool up);
-static uint16_t custom_dpi = 1400;
-static uint16_t minimum_dpi = 200;
-static uint16_t max_dpi = 12000;
-static uint16_t step_size = 100;
-
-enum custom_keycodes {
-    DPI_UP = SAFE_RANGE,
-    DPI_DOWN,
-};
-
-enum combo_events {
-    SHOW_DPI_COMBO,
-    LH_TOGGLE_COMBO,
-    HIRES_SCROLL_TOGGLE_COMBO,
-};
-
-const uint16_t PROGMEM dpi_combo_keys[] = {DPI_DOWN, DPI_UP, COMBO_END};
-const uint16_t PROGMEM lh_combo_keys[] = {LCA(LSFT(KC_TAB)), LCA(KC_TAB), COMBO_END};
-const uint16_t PROGMEM hires_scroll_combo_keys[] = {KC_ENT, LCA(KC_TAB), COMBO_END};
-
-combo_t key_combos[] = {
-    [SHOW_DPI_COMBO] = COMBO_ACTION(dpi_combo_keys),
-    [LH_TOGGLE_COMBO] = COMBO_ACTION(lh_combo_keys),
-    [HIRES_SCROLL_TOGGLE_COMBO] = COMBO_ACTION(hires_scroll_combo_keys)
-};
+static int16_t scroll_v_accumulator = 0;
+static int16_t scroll_h_accumulator = 0;
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [0] = LAYOUT( 
-        MS_BTN3, MS_BTN4, MS_BTN5, MS_BTN2, 
-        MS_BTN1,          LT_DRAGSCROLL
-    ),
-
-    [1] = LAYOUT( 
-        LCA(LSFT(KC_TAB)), DPI_DOWN, DPI_UP, LCA(KC_TAB), 
-        KC_ENT,           KC_TRNS
+    [0] = LAYOUT(
+        MS_BTN3, MS_BTN4, MS_BTN5, MS_BTN2,
+        MS_BTN1,          DRAG_SCROLL
     )
 };
 
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    if (is_drag_scroll) {
+        // Windows and Linux: do nothing, ploopyco.c already calculated perfect hi-res deltas
+        if (detected_host_os() != OS_WINDOWS && detected_host_os() != OS_LINUX) {
+            // macOS / other: accumulate ploopyco's deltas into discrete notches
+            scroll_v_accumulator += mouse_report.v;
+            scroll_h_accumulator += mouse_report.h;
 
-// Define the swap table
-// https://docs.qmk.fm/features/swap_hands
-const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
-    // Row 0 contains all 6 buttons
-    [0] = {
-        {5, 0}, // 0 swaps with 5 (Bottoms)
-        {4, 0}, // 1 swaps with 4 (Outer Tops)
-        {2, 0}, // 2 swaps with 2 (Inner Tops)
-        {3, 0}, // 3 swaps with 3 (not swapping Back/Forward and DPI_DOWN/DPI_UP)
-        {1, 0}, // 4 swaps with 1
-        {0, 0}  // 5 swaps with 0
-    }
-};
+            mouse_report.v = 0;
+            mouse_report.h = 0;
 
-void process_combo_event(uint16_t combo_index, bool pressed) {
-    switch(combo_index) {
-        case SHOW_DPI_COMBO:
-            if (pressed) {
-                char dpi_str[6];
-                itoa(custom_dpi, dpi_str, 10);
-                send_string(dpi_str);
+            if (scroll_v_accumulator >= LOWRES_SCROLL_TICK_SIZE) {
+                mouse_report.v = 1;
+                scroll_v_accumulator = 0;
+            } else if (scroll_v_accumulator <= -LOWRES_SCROLL_TICK_SIZE) {
+                mouse_report.v = -1;
+                scroll_v_accumulator = 0;
             }
-            break;
-        case LH_TOGGLE_COMBO:
-            if (pressed) {
-                swap_hands_toggle();
-            }
-            break;
-        case HIRES_SCROLL_TOGGLE_COMBO:
-            if (pressed) {
-                toggle_hires_scroll();
-            }
-    }
-}
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case LT_DRAGSCROLL:
-            if (record->tap.count) {
-                if (record->event.pressed) {
-                    // Using the built-in Ploopy functio1400
-                    toggle_drag_scroll();
-                }
-                return false;
+            if (scroll_h_accumulator >= LOWRES_SCROLL_TICK_SIZE) {
+                mouse_report.h = 1;
+                scroll_h_accumulator = 0;
+            } else if (scroll_h_accumulator <= -LOWRES_SCROLL_TICK_SIZE) {
+                mouse_report.h = -1;
+                scroll_h_accumulator = 0;
             }
-            break;
-
-        case DPI_UP:
-            if (record->event.pressed) {
-                manageDPI(true);
-            }
-            return false;
-
-        case DPI_DOWN:
-            if (record->event.pressed) {
-                manageDPI(false);
-            }
-            return false;
-    }
-    return true;
-}
-
-void manageDPI(bool up) {
-    uint16_t step = step_size;
-    // if (custom_dpi >= 5000) {
-    //     step = 1000;
-    // } else if (custom_dpi >= 1500) {
-    //     step = 500;
-    // }
-
-    if (up) {
-        custom_dpi += step;
-    } else {
-        if (custom_dpi > step) {
-            custom_dpi -= step;
         }
+    } else {
+        scroll_v_accumulator = 0;
+        scroll_h_accumulator = 0;
     }
 
-    if (custom_dpi < minimum_dpi) custom_dpi = minimum_dpi;
-    if (custom_dpi > max_dpi)     custom_dpi = max_dpi;
-
-    pointing_device_set_cpi(custom_dpi);
+    return mouse_report;
 }

@@ -21,25 +21,27 @@
 #define UNUSABLE_PINS \
     { GP1, GP3, GP4, GP6, GP8, GP10, GP14, GP16, GP18, GP20, GP22, GP24, GP25, GP26, GP27, GP28, GP29 }
 
-// Drag Scroll Settings from your patch
+#define PLOOPY_DPI_OPTIONS { 1200 }
+#define PLOOPY_DPI_DEFAULT 0
+
 #define POINTING_DEVICE_HIRES_SCROLL_ENABLE
 #define POINTING_DEVICE_HIRES_SCROLL_MULTIPLIER 120
-#define WHEEL_EXTENDED_REPORT
-#define PLOOPY_DRAGSCROLL_INVERT
+#define POINTING_DEVICE_HIRES_SCROLL_EXPONENT 0
 
-// #define ROTATIONAL_TRANSFORM_ANGLE 0
 #define POINTING_DEVICE_INVERT_Y
-// #define PLOOPY_DPI_OPTIONS {1200, 1400, 1600, 1800, 2000, 2200, 2400}
-// #define PLOOPY_DPI_DEFAULT 2
 
-#define COMBO_TERM 100
-#define TAPPING_TERM 175
+#define MOUSE_EXTENDED_REPORT
+#define WHEEL_EXTENDED_REPORT
 
 // drashna/pointing_device_accel
 #define POINTING_DEVICE_ACCEL_TAKEOFF 2.0      // lower/higher value = curve takes off more smoothly/abruptly
 #define POINTING_DEVICE_ACCEL_GROWTH_RATE 0.25 // lower/higher value = curve reaches its upper limit slower/faster
 #define POINTING_DEVICE_ACCEL_OFFSET 2.2       // lower/higher value = acceleration kicks in earlier/later
 #define POINTING_DEVICE_ACCEL_LIMIT 0.2        // lower limit of accel curve (minimum acceleration factor)
+
+#define PLOOPY_DRAGSCROLL_DIVISOR_H 1.0
+#define PLOOPY_DRAGSCROLL_DIVISOR_V 0.3
+#define PLOOPY_DRAGSCROLL_INVERT
 
 /* PMW3360 Settings */
 #define PMW33XX_LIFTOFF_DISTANCE 0x00
